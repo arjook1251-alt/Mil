@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>दूध का हिसाब</title>
+<style>
+  body {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    background-color: #f0f4f8;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  form {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+  }
+  input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+  }
+  table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background-color: #e9ecef;
+  }
+  .delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <h1>दूध का हिसाब</h1>
+  <form id="milkForm">
+    <label>तारीख:</label>
+    <input type="date" id="date" required>
+
+    <label>फैट (%):</label>
+    <input type="number" id="fat" step="0.1" required>
+
+    <label>लीटर:</label>
+    <input type="number" id="liters" step="0.01" required>
+
+    <label>रुपए:</label>
+    <input type="number" id="price" step="0.01" required>
+
+    <button type="submit">हिसाब जोड़ें</button>
+  </form>
+
+  <table id="milkTable">
+    <thead>
+      <tr>
+        <th>तारीख</th>
+        <th>फैट (%)</th>
+        <th>लीटर</th>
+        <th>रुपए</th>
+        <th>एक्शन</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+let records = JSON.parse(localStorage.getItem('milkData')) || [];
+const form = document.getElementById('milkForm');
+const tableBody = document.querySelector('#milkTable tbody');
+
+function renderTable(){
+  tableBody.innerHTML = "";
+  let totalL = 0, totalP = 0, totalF = 0;
+  records.forEach((item,i)=>{
+    totalL += Number(item.liters);
+    totalP += Number(item.price);
+    totalF += Number(item.fat);
+    tableBody.innerHTML += `<tr>
+      <td>${item.date}</td>
+      <td>${item.fat}</td>
+      <td>${item.liters}</td>
+      <td>${item.price}</td>
+      <td><button class="delete-btn" onclick="deleteRow(${i})">हटाएं</button></td>
+    </tr>`;
+  });
+
+  if(records.length > 0){
+    let avgF = (totalF / records.length).toFixed(2);
+    tableBody.innerHTML += `<tr>
+      <th>कुल / औसत</th>
+      <th>${avgF}</th>
+      <th>${totalL.toFixed(2)} लीटर</th>
+      <th>${totalP.toFixed(2)} ₹</th>
+      <th></th>
+    </tr>`;
+  }
+}
+
+function deleteRow(i){
+  records.splice(i,1);
+  localStorage.setItem('milkData', JSON.stringify(records));
+  renderTable();
+}
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  const date = document.getElementById('date').value;
+  const fat = document.getElementById('fat').value;
+  const liters = document.getElementById('liters').value;
+  const price = document.getElementById('price').value;
+
+  records.push({date,fat,liters,price});
+  localStorage.setItem('milkData', JSON.stringify(records));
+  renderTable();
+  form.reset();
+});
+
+// Initial render
+renderTable();
+</script>
+</body>
+</html>
